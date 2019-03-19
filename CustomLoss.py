@@ -15,7 +15,7 @@ class MahalanobisLoss(torch.nn.Module):
         #print(Q)
         md = self.getMD(error, Q)
         normQ = self.norm(Q)
-        #normQ = torch.add(normQ, 0)
+        normQ = torch.add(normQ, 1)
         logQ = torch.log(normQ)
         md_loss = torch.add(md, logQ)
         return torch.mean(md_loss)
