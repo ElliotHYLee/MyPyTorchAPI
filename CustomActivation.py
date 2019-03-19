@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-class Sigmoid100(torch.nn.Module):
+class Sigmoid(torch.nn.Module):
     def __init__(self, a=1, max = 10):
         super().__init__()
         self.a = a
