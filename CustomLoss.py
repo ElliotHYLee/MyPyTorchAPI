@@ -53,8 +53,11 @@ class MahalanobisLoss(torch.nn.Module):
     def getCovMat(self, chol_cov):
         bn = chol_cov.shape[0]
         if self.isSeries:
-            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
-            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
+            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
+            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
+            if torch.cuda.is_available():
+                h_t = L.cuda()
+                c_t = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
@@ -62,8 +65,11 @@ class MahalanobisLoss(torch.nn.Module):
                     LT[:, :, i, j] = chol_cov[:, :, index]
                     index += 1
         else:
-            L = torch.zeros(bn, 3, 3, dtype=torch.float).cuda()
-            LT = torch.zeros(bn, 3, 3, dtype=torch.float).cuda()
+            L = torch.zeros(bn, 3, 3, dtype=torch.float)
+            LT = torch.zeros(bn, 3, 3, dtype=torch.float)
+            if torch.cuda.is_available():
+                h_t = L.cuda()
+                c_t = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
