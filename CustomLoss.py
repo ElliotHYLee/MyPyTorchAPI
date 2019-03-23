@@ -23,7 +23,7 @@ class MahalanobisLoss(torch.nn.Module):
         logQ = torch.log(normQ)
         md_loss = torch.add(md, logQ)
         if self.isSeries:
-            md_loss = torch.sum(md_loss, dim=1)
+            md_loss = torch.mean(md_loss, dim=1)
             mae = torch.mean(md_loss, dim=0)
         else:
             mae = torch.mean(md_loss, dim=0)
@@ -44,7 +44,7 @@ class MahalanobisLoss(torch.nn.Module):
     def norm(self, Q):
         if self.isSeries:
             lin = Q.reshape(-1, self.delay, 9)
-            norm = torch.mean(lin, dim=2).unsqueeze(2)
+            norm = torch.sum(lin, dim=2).unsqueeze(2)
         else:
             lin = Q.reshape(-1, 9)
             norm = torch.sum(lin, dim=1).unsqueeze(1)
