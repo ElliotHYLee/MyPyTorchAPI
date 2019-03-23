@@ -56,8 +56,8 @@ class MahalanobisLoss(torch.nn.Module):
             L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
             LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
             if torch.cuda.is_available():
-                h_t = L.cuda()
-                c_t = LT.cuda()
+                L = L.cuda()
+                LT = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
@@ -68,8 +68,8 @@ class MahalanobisLoss(torch.nn.Module):
             L = torch.zeros(bn, 3, 3, dtype=torch.float)
             LT = torch.zeros(bn, 3, 3, dtype=torch.float)
             if torch.cuda.is_available():
-                h_t = L.cuda()
-                c_t = LT.cuda()
+                L = L.cuda()
+                LT = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
