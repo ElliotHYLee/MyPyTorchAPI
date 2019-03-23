@@ -44,7 +44,7 @@ class MahalanobisLoss(torch.nn.Module):
     def norm(self, Q):
         if self.isSeries:
             lin = Q.reshape(-1, self.delay, 9)
-            norm = torch.mean(lin, dim=2).unsqueeze(2)
+            norm = torch.sum(lin, dim=2).unsqueeze(2)
         else:
             lin = Q.reshape(-1, 9)
             norm = torch.sum(lin, dim=1).unsqueeze(1)
@@ -53,13 +53,13 @@ class MahalanobisLoss(torch.nn.Module):
     def getCovMat(self, chol_cov):
         bn = chol_cov.shape[0]
         if self.isSeries:
-            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
-            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
+            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
+            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
-                    L[:, :, j, i] = chol_cov[:, :, index]
-                    LT[:, :, i, j] = chol_cov[:, :, index]
+                    L[:, :, j, i] = chol[:, :, index]
+                    LT[:, :, i, j] = chol[:, :, index]
                     index += 1
         else:
             L = torch.zeros(bn, 3, 3, dtype=torch.float).cuda()
@@ -77,38 +77,61 @@ class MahalanobisLoss(torch.nn.Module):
         error = torch.abs(pr_x - x)
         return torch.mean(error)
 
+
 def makeBatch(x):
     x = np.expand_dims(x, axis=0)
     x = np.concatenate([x,x], axis=0)
     return x
 
 if __name__ == '__main__':
-    # non-series MD
-    gt_x = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32)
-    pr_x = np.array([[0.8, 2.1, 3], [3.9, 5.2, 5.8]], dtype=np.float32)
-    chol_np = np.array([[1, 0, 1, 0, 0, 1], [1, 0, 1, 0, 0, 1]], dtype=np.float32)
-    gt_x = torch.from_numpy(gt_x).cuda()
-    pr_x = torch.from_numpy(pr_x).cuda()
-    chol = torch.from_numpy(chol_np).cuda()
-    loss = MahalanobisLoss(series_Len=1)
-    md = loss(gt_x, pr_x, chol)
-    print(md)
-    print(md.shape)
 
-
-    # series MD
-    gt_x1 = np.expand_dims(np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32), axis=0)
+    gt_x1 = np.expand_dims(np.array([[1, 2, 3],[4, 5, 6]], dtype=np.float32), axis=0)
     gt_x2 = np.expand_dims(np.array([[7, 8, 9], [10, 11, 12]], dtype=np.float32), axis=0)
     gt_x = np.concatenate((gt_x1, gt_x2), axis=0)
-    pr_x1 = np.expand_dims(np.array([[0.8, 2.1, 3], [3.9, 5.2, 5.8]], dtype=np.float32), axis=0)
+    pr_x1 =  np.expand_dims(np.array([[0.8, 2.1, 3],[3.9, 5.2, 5.8]], dtype=np.float32), axis=0)
     pr_x2 = np.expand_dims(np.array([[6.6, 8.05, 9.11], [9.985, 11.3, 11.9]], dtype=np.float32), axis=0)
     pr_x = np.concatenate((pr_x1, pr_x2), axis=0)
-    chol_np = makeBatch(np.array([[1, 0, 1, 0, 0, 1], [1, 0, 1, 0, 0, 1]], dtype=np.float32))
+    chol_np = makeBatch(np.array([[1, 0, 1, 0, 0, 1],[1, 0, 1, 0, 0, 1]], dtype=np.float32))
 
-    gt_x = torch.from_numpy(gt_x).cuda()
-    pr_x = torch.from_numpy(pr_x).cuda()
-    chol = torch.from_numpy(chol_np).cuda()
+
+    gt_x = torch.from_numpy(gt_x)
+    pr_x = torch.from_numpy(pr_x)
+    chol = torch.from_numpy(chol_np)
+    # L = torch.zeros(2, 2, 3, 3, dtype=torch.float)
+    # LT = torch.zeros(2, 2, 3, 3, dtype=torch.float)
+    # index = 0
+    # for j in range(0, 3):
+    #     for i in range(0, j + 1):
+    #         L[:, :, j, i] = chol[:, :, index]
+    #         LT[:, :, i, j] = chol[:,:, index]
+    #         index += 1
+    #
+    # Q = torch.matmul(L, LT)
+    # invQ = torch.inverse(Q)
+    # error = gt_x - pr_x
+    # md = error.unsqueeze(2).matmul(invQ)
+    # md = torch.matmul(md, error.unsqueeze(3))
+    # md = (md.squeeze(2))
+    #
+    # print(md)
+    # lin = Q.reshape(-1, 2, 9)
+    # norm = (torch.sum(lin, dim=2).unsqueeze(2))
+    #
+    # logQ = torch.log(norm)
+    # print('-------')
+    # print(logQ.shape)
+    # print(md.shape)
+    # f = torch.add(md, logQ)
+    # print(f.shape)
+    # f = torch.sum(f, dim=1)
+    # print(f.shape)
+    # f = torch.mean(f,dim=0)
+    # print(f.shape)
+
+
+
+    chol = torch.from_numpy(chol_np)
+    print(chol.shape)
     loss = MahalanobisLoss(series_Len=2)
     md = loss(gt_x, pr_x, chol)
-    print(md)
     print(md.shape)
