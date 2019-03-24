@@ -21,6 +21,15 @@ class GetIdentity(torch.nn.Module):
         I = I.repeat(bn, 1, 1)
         return I
 
+class Batch33MatVec3Mul(torch.nn.Module):
+    def __init(self):
+        super().__init__()
+
+    def forward(self, mat, vec):
+        vec = vec.unsqueeze(2)
+        result = torch.matmul(mat, vec)
+        return result.squeeze(2)
+
 class GetSkew(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -38,3 +47,11 @@ class GetSkew(torch.nn.Module):
         skew[:, 2, 0] = -dw[:, 1]
         skew[:, 2, 1] = dw[:, 0]
         return skew
+
+
+
+
+
+
+
+
