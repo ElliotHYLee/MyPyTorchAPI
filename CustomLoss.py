@@ -23,7 +23,7 @@ class MahalanobisLoss(torch.nn.Module):
         logQ = torch.log(normQ)
         md_loss = torch.add(md, logQ)
         if self.isSeries:
-            md_loss = torch.sum(md_loss, dim=1)
+            md_loss = torch.mean(md_loss, dim=1)
             mae = torch.mean(md_loss, dim=0)
         else:
             mae = torch.mean(md_loss, dim=0)
@@ -44,7 +44,7 @@ class MahalanobisLoss(torch.nn.Module):
     def norm(self, Q):
         if self.isSeries:
             lin = Q.reshape(-1, self.delay, 9)
-            norm = torch.mean(lin, dim=2).unsqueeze(2)
+            norm = torch.sum(lin, dim=2).unsqueeze(2)
         else:
             lin = Q.reshape(-1, 9)
             norm = torch.sum(lin, dim=1).unsqueeze(1)
@@ -53,8 +53,11 @@ class MahalanobisLoss(torch.nn.Module):
     def getCovMat(self, chol_cov):
         bn = chol_cov.shape[0]
         if self.isSeries:
-            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
-            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float).cuda()
+            L = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
+            LT = torch.zeros(bn, self.delay, 3, 3, dtype=torch.float)
+            if torch.cuda.is_available():
+                L = L.cuda()
+                LT = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
@@ -62,8 +65,11 @@ class MahalanobisLoss(torch.nn.Module):
                     LT[:, :, i, j] = chol_cov[:, :, index]
                     index += 1
         else:
-            L = torch.zeros(bn, 3, 3, dtype=torch.float).cuda()
-            LT = torch.zeros(bn, 3, 3, dtype=torch.float).cuda()
+            L = torch.zeros(bn, 3, 3, dtype=torch.float)
+            LT = torch.zeros(bn, 3, 3, dtype=torch.float)
+            if torch.cuda.is_available():
+                L = L.cuda()
+                LT = LT.cuda()
             index = 0
             for j in range(0, 3):
                 for i in range(0, j + 1):
