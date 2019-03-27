@@ -1,21 +1,25 @@
 import torch
+import torch.nn as nn
 import numpy as np
 
-class MahalanobisLoss(torch.nn.Module):
+class MahalanobisLoss(nn.Module):
     def __init__(self, series_Len):
         super().__init__()
         self.isSeries = False if series_Len <= 1 else True
         self.delay = series_Len
 
-    def forward(self, pr_x, x, chol_cov):
-        md = self.MahalanobisLoss(pr_x, x, chol_cov)
+    def forward(self, pr_x, x, chol_cov, rotM = None):
+        md = self.MahalanobisLoss(pr_x, x, chol_cov, rotM)
         # ed = self.EuclideanLoss(pr_x, x)
         # mean_loss = torch.add(md, ed)
         return md
 
-    def MahalanobisLoss(self, pr_x, x, chol_cov):
+    def MahalanobisLoss(self, pr_x, x, chol_cov, rotM = None):
         error = pr_x-x
         Q = self.getCovMat(chol_cov)
+        if rotM is not None:
+            Q = torch.bmm(rotM, Q)
+            Q = torch.bmm(Q, torch.transpose(rotM, dim0=2, dim1=1))
         #print(Q)
         md = self.getMD(error, Q)
         normQ = self.norm(Q)
