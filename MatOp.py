@@ -1,7 +1,7 @@
 import torch
-import torch.nn
+import torch.nn as nn
 
-class BatchScalar33MatMul(torch.nn.Module):
+class BatchScalar33MatMul(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -10,7 +10,7 @@ class BatchScalar33MatMul(torch.nn.Module):
         s = s.expand_as(mat)
         return s*mat
 
-class GetIdentity(torch.nn.Module):
+class GetIdentity(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -22,7 +22,7 @@ class GetIdentity(torch.nn.Module):
         I = I.repeat(bn, 1, 1)
         return I
 
-class Batch33MatVec3Mul(torch.nn.Module):
+class Batch33MatVec3Mul(nn.Module):
     def __init(self):
         super().__init__()
 
@@ -31,7 +31,7 @@ class Batch33MatVec3Mul(torch.nn.Module):
         result = torch.matmul(mat, vec)
         return result.squeeze(2)
 
-class GetSkew(torch.nn.Module):
+class GetSkew(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -48,32 +48,6 @@ class GetSkew(torch.nn.Module):
         skew[:, 2, 0] = -dw[:, 1]
         skew[:, 2, 1] = dw[:, 0]
         return skew
-
-
-class Mat33Vec3Mul(torch.nn.Module):
-    def __init__(self, LSTM_input_size, LSTM_num_layer, LSTM_hidden_size,
-                 fc_output_size):
-        super().__init__()
-        self.lstm = nn.LSTM(input_size=LSTM_input_size, hidden_size=LSTM_hidden_size,
-                                   num_layers=LSTM_num_layer, batch_first=True,
-                                   bidirectional=False)
-        self.fc_lstm = nn.Sequential(nn.Linear(LSTM_hidden_size, LSTM_hidden_size),
-                                        nn.PReLU(),
-                                        nn.Linear(LSTM_hidden_size, LSTM_hidden_size),
-                                        nn.PReLU(),
-                                        nn.Linear(LSTM_hidden_size, fc_output_size))
-
-        self.num_layers = LSTM_num_layer
-        self.hiddenSize = LSTM_hidden_size
-        self.num = 1
-
-    def forward(self, x):
-        bn = x.shape[0]
-        x, (h, c) = self.lstm(x, self.init_hidden(bn))
-        x = x.squeeze(0)
-        x = self.fc_lstm(x)
-        return x
-
 
 
 
