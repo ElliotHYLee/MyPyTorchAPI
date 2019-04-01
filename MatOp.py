@@ -71,6 +71,27 @@ class GetCovMatFromChol(nn.Module):
         Q = torch.matmul(L, LT)
         return Q
 
+class GetCovMatFromChol_Sequence(nn.Module):
+    def __init__(self, seq_len):
+        super().__init__()
+        self.seq_len = seq_len
+
+    def forward(self, chol_cov):
+        bn = chol_cov.shape[0]
+        L = torch.zeros(bn, self.seq_len, 3, 3, dtype=torch.float)
+        LT = torch.zeros(bn, self.seq_len, 3, 3, dtype=torch.float)
+        if torch.cuda.is_available():
+            L = L.cuda()
+            LT = LT.cuda()
+        index = 0
+        for j in range(0, 3):
+            for i in range(0, j + 1):
+                L[:, :, j, i] = chol_cov[:, :, index]
+                LT[:, :, i, j] = chol_cov[:, :, index]
+                index += 1
+        Q = torch.matmul(L, LT)
+        return Q
+
 
 if __name__ == '__main__':
     mat1 = np.array([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
