@@ -94,8 +94,8 @@ class GetCovMatFromChol_Sequence(nn.Module):
 
 
 if __name__ == '__main__':
-    mat1 = np.array([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                     [[11, 12, 13], [14, 15, 16], [17, 18, 19]]], dtype=np.float32)
+    mat1 = np.array([[[1, 2, 3], [4, 1, 6], [7, 8, 1]],
+                     [[1, 12, 13], [14, 1, 16], [17, 18, 1]]], dtype=np.float32)
 
     mat2 = -np.array([[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
                      [[11, 12, 13], [14, 15, 16], [17, 18, 19]]], dtype=np.float32)
@@ -104,11 +104,8 @@ if __name__ == '__main__':
     mat2 = torch.from_numpy(mat2).cuda()
 
     print(mat1)
-    print(torch.transpose(mat1, dim0=2, dim1=1))
-    #
-    #
-    # mat = torch.matmul(mat1, mat2)
-    # print(mat)
+    print(mat1.shape)
+    # print(torch.transpose(mat1, dim0=2, dim1=1))
 
-
-
+    invMat1 = torch.inverse(mat1[:,])
+    print(invMat1)
