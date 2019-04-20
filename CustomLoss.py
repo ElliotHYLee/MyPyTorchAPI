@@ -22,7 +22,6 @@ class MahalanobisLoss(nn.Module):
         if rotM is not None:
             Q = torch.bmm(rotM, Q)
             Q = torch.bmm(Q, torch.transpose(rotM, dim0=2, dim1=1))
-        #print(Q)
         md = self.getMD(error, Q)
         normQ = self.norm(Q)
         normQ = torch.add(normQ, 1)
