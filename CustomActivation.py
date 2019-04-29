@@ -11,7 +11,6 @@ class Sigmoid(torch.nn.Module):
         act = sig(self.a*v)*self.max
         return act
 
-
 class TanH(torch.nn.Module):
     def __init__(self, a=1, max = 10):
         super().__init__()
@@ -22,7 +21,6 @@ class TanH(torch.nn.Module):
         tanh = nn.Tanh()
         act = tanh(self.a*(v))*self.max
         return act
-
 
 class MyCustom(torch.nn.Module):
     def __init__(self, a=1, max = 10):
