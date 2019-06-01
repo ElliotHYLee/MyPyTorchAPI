@@ -4,14 +4,12 @@ import numpy as np
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
+from abc import ABCMeta, abstractmethod
 
-class Model_Container():
+class AbsModelContainer(metaclass=ABCMeta):
     def __init__(self, model, wName='Weights/main'):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = nn.DataParallel(model, device_ids=[0, 1]).to(self.device)
-        self.optimizer = optim.RMSprop(model.parameters(), lr=10 ** -3, weight_decay=10 ** -3)
-        self.loss = nn.modules.loss.L1Loss()
-        self.bn = 0
         self.current_val_loss = 10 ** 5
         self.min_val_loss = 10 ** 5
         self.train_loss = []
@@ -91,17 +89,14 @@ class Model_Container():
 
     def forward(self, epochs, dataLoader, forwardCase = 0, N = 0):
         if forwardCase == 2: # test forward
-            result0 = np.zeros((N, 2))
-            result1 = np.zeros((N, 2, 2))
-            result2 = np.zeros((N, 2))
+            self.prepResults(N)
         for epoch in range (0, epochs):
             sumEpochLoss = 0
-            for batch_idx, (x, y, u) in enumerate(dataLoader):
-                x, y, u = self.toGPU(x, y, u)
-                pr, A, B = self.model(x, u)
+            for batch_idx, dataInTuple in enumerate(dataLoader):
+                self.forwardProp(dataInTuple)
 
                 if forwardCase == 0: # train
-                    batchLoss = self.loss(pr[:, 0, None], y[:, 0, None]) + 100 * self.loss(pr[:, 1, None], y[:, 1, None])
+                    batchLoss = self.getLoss()
                     self.optimizer.zero_grad()
                     batchLoss.backward()
                     self.optimizer.step()
@@ -110,15 +105,13 @@ class Model_Container():
                     self.save_weights(self.wName)
 
                 elif forwardCase == 1:# validation
-                    batchLoss = self.loss(pr[:, 0, None], y[:, 0, None]) + 1 * self.loss(pr[:, 1, None], y[:, 1, None])
+                    batchLoss = self.getLoss()
                     sumEpochLoss += batchLoss.item()
 
                 elif forwardCase == 2: # test
                     start = batch_idx * self.bn
                     last = start + self.bn
-                    result0[start:last,:] = self.toCPUNumpy(pr)
-                    result1[start:last,:] = self.toCPUNumpy(A)
-                    result2[start:last, :] = self.toCPUNumpy(B)
+                    self.saveToResults(start, last)
 
             meanEpochLoss = sumEpochLoss / len(dataLoader)
             if forwardCase == 0:
@@ -133,4 +126,27 @@ class Model_Container():
                 return sumEpochLoss / len(dataLoader)
 
         if forwardCase == 2:
-           return result0, result1, result2
+           return self.returnResults()
+
+    # @abstractmethod
+    # def parseData(self, dataInTuple):
+    #     pass
+    @abstractmethod
+    def getLoss(self):
+        pass
+    
+    @abstractmethod
+    def forwardProp(sel, dataInTuple):
+        pass
+
+    @abstractmethod
+    def prepResults(self, N):
+        pass
+
+    @abstractmethod
+    def saveToResults(self, start, last):
+        pass
+
+    @abstractmethod
+    def returnResults(self):
+        pass
