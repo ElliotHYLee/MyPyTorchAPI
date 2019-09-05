@@ -91,6 +91,7 @@ class AbsModelContainer(metaclass=ABCMeta):
         if forwardCase == 2: # test forward
             self.prepResults(N)
         for epoch in range (0, epochs):
+            self.changeOptim(epoch)
             sumEpochLoss = 0
             for batch_idx, dataInTuple in enumerate(dataLoader):
                 self.forwardProp(dataInTuple)
@@ -128,9 +129,11 @@ class AbsModelContainer(metaclass=ABCMeta):
         if forwardCase == 2:
            return self.returnResults()
 
-    # @abstractmethod
-    # def parseData(self, dataInTuple):
-    #     pass
+    # not recommended
+    @abstractmethod
+    def changeOptim(self, epoch):
+        pass
+
     @abstractmethod
     def getLoss(self):
         pass
