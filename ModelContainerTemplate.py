@@ -3,7 +3,6 @@ from MyPyTorchAPI.AbsModelContainer import *
 class ModelContainerGNet(AbsModelContainer):
     def __init__(self, model, wName='Weights/main'):
         super().__init__(model, wName)
-        super().__init__(model, wName)
         self.bn = 0
         self.optimizer = optim.RMSprop(model.parameters(), lr=10 ** -3, weight_decay=10 ** -3)
         self.loss = nn.modules.loss.L1Loss()
