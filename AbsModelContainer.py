@@ -88,8 +88,7 @@ class AbsModelContainer(metaclass=ABCMeta):
         return self.forward(epochs=1, dataLoader = dataLoader, forwardCase = 2, N=N)
 
     def forward(self, epochs, dataLoader, forwardCase = 0, N = 0):
-        if forwardCase == 2: # test forward
-            self.prepResults(N)
+
         for epoch in range (0, epochs):
             self.changeOptim(epoch)
             sumEpochLoss = 0
@@ -110,6 +109,8 @@ class AbsModelContainer(metaclass=ABCMeta):
                     sumEpochLoss += batchLoss.item()
 
                 elif forwardCase == 2: # test
+                    if epoch == 0:
+                        self.prepResults(N)
                     start = batch_idx * self.bn
                     last = start + self.bn
                     self.saveToResults(start, last)
@@ -129,9 +130,10 @@ class AbsModelContainer(metaclass=ABCMeta):
         if forwardCase == 2:
            return self.returnResults()
 
-    # not recommended
+
     @abstractmethod
     def changeOptim(self, epoch):
+        # not recommended to implement
         pass
 
     @abstractmethod
