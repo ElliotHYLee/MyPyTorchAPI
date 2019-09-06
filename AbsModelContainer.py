@@ -109,7 +109,7 @@ class AbsModelContainer(metaclass=ABCMeta):
                     sumEpochLoss += batchLoss.item()
 
                 elif forwardCase == 2: # test
-                    if epoch == 0:
+                    if epoch == 0 and batch_idx == 0:
                         self.prepResults(N)
                     start = batch_idx * self.bn
                     last = start + self.bn
