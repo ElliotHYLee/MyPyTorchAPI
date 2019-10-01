@@ -9,7 +9,7 @@ def AVTN(name):
     elif name == 'lrlu':
         return nn.LeakyReLU(0.2, inplace=True)
     elif name == 'tanh':
-        return nn.Tanh()
+        return
 
 def GetFlatSize(x):
     return x[0] * x[1] * x[2]
