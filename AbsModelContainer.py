@@ -60,7 +60,7 @@ class AbsModelContainer(metaclass=ABCMeta):
         }, fName + '.pt')
 
     def load_weights(self, path, train = True):
-        self.wName = path + '.pt'
+        self.wName = path
         checkPoint = torch.load(path + '.pt')
         self.model.load_state_dict(checkPoint['model_state_dict'])
         self.optimizer.load_state_dict(checkPoint['optimizer_state_dict'])
