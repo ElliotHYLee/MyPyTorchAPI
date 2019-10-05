@@ -49,7 +49,14 @@ class AbsModelContainer(metaclass=ABCMeta):
     def getLossHistory(self):
         return np.array(self.train_loss), np.array(self.val_loss)
 
-    def save_weights(self, fName):
+    def save_weights(self, fName, epoch):
+        if np.mod(epoch, 2):
+            torch.save({
+                'model_state_dict': self.model.state_dict(),
+                'optimizer_state_dict': self.optimizer.state_dict(),
+                'train_loss': self.train_loss,
+                'val_loss': self.val_loss,
+            }, fName + '.pt')
         if self.checkIfMinVal():
             fName = fName + '_best'
         torch.save({
@@ -58,6 +65,9 @@ class AbsModelContainer(metaclass=ABCMeta):
             'train_loss': self.train_loss,
             'val_loss': self.val_loss,
         }, fName + '.pt')
+
+
+
 
     def load_weights(self, path, train = True):
         self.wName = path
@@ -102,7 +112,7 @@ class AbsModelContainer(metaclass=ABCMeta):
                     self.optimizer.step()
                     self.print_batch_result(epoch, batch_idx, len(dataLoader)-1, batchLoss.item())
                     sumEpochLoss += batchLoss.item()
-                    self.save_weights(self.wName)
+                    self.save_weights(self.wName, epoch)
 
                 elif forwardCase == 1:# validation
                     batchLoss = self.getLoss()
