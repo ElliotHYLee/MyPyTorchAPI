@@ -35,6 +35,8 @@ class ModelContainerGNet(AbsModelContainer):
         pass
         #return self.result0, self.result1, self.result2
 
+    def changeOptim(self, epoch):
+        pass
 
 
 
