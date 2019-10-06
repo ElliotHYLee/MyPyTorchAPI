@@ -17,6 +17,7 @@ class AbsModelContainer(metaclass=ABCMeta):
         self.wName = wName
         self.output = None
         self.valid_loader = None
+        self.optimizer = None
 
     def print_epoch_result(self, epoch, train_loss, val_loss, elapse):
         msg = "===> Epoch {} Complete. Avg-Loss => " \
@@ -32,14 +33,14 @@ class AbsModelContainer(metaclass=ABCMeta):
               "Time-lapse per batch: {:.4f}".format(epoch, batch_idx, N, loss, elapse)
         sys.stdout.write('\r' + msg)
 
-    # def toCPUNumpy(self, torchTensor):
-    #     return torchTensor.cpu().data.numpy()
-    #
-    # def toGPU(self, *args):
-    #     res = ()
-    #     for i in range(0, len(args)):
-    #         res = res + (args[i].to(self.device),)
-    #     return res
+    def toCPUNumpy(self, torchTensor):
+        return torchTensor.cpu().data.numpy()
+
+    def toGPU(self, *args):
+        res = ()
+        for i in range(0, len(args)):
+            res = res + (args[i].to(self.device),)
+        return res
 
     def checkIfMinVal(self):
         if self.min_val_loss >= self.current_val_loss:
