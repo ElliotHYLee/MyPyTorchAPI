@@ -15,6 +15,7 @@ class AbsModelContainer(metaclass=ABCMeta):
         self.train_loss = []
         self.val_loss = []
         self.wName = wName
+        self.output = None
 
     def print_epoch_result(self, epoch, train_loss, val_loss):
         msg = "===> Epoch {} Complete. Avg-Loss => Train: {:.4f} Validation: {:.4f}".format(epoch, train_loss, val_loss)
@@ -109,10 +110,14 @@ class AbsModelContainer(metaclass=ABCMeta):
                     self.optimizer.step()
                     self.print_batch_result(epoch, batch_idx, len(dataLoader)-1, batchLoss.item())
                     sumEpochLoss += batchLoss.item()
+                    del batchLoss
+                    del self.output
 
                 elif forwardCase == 1:# validation
                     batchLoss = self.getLoss()
                     sumEpochLoss += batchLoss.item()
+                    del batchLoss
+                    del self.output
 
                 elif forwardCase == 2: # test
                     if epoch == 0 and batch_idx == 0:
