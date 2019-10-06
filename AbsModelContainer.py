@@ -5,7 +5,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
 from abc import ABCMeta, abstractmethod
-
+import time
 class AbsModelContainer(metaclass=ABCMeta):
     def __init__(self, model, wName='Weights/main'):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -16,29 +16,30 @@ class AbsModelContainer(metaclass=ABCMeta):
         self.val_loss = []
         self.wName = wName
         self.output = None
+        self.valid_loader = None
 
-    def print_epoch_result(self, epoch, train_loss, val_loss):
-        msg = "===> Epoch {} Complete. Avg-Loss => Train: {:.4f} Validation: {:.4f}".format(epoch, train_loss, val_loss)
+    def print_epoch_result(self, epoch, train_loss, val_loss, elapse):
+        msg = "===> Epoch {} Complete. Avg-Loss => " \
+              "Train: {:.4f} " \
+              "Validation: {:.4f} " \
+              "Time-lapse per epoch: {:.4f}"\
+            .format(epoch, train_loss, val_loss, elapse)
         sys.stdout.write('\r' + msg)
         print('')
 
-    def print_batch_result(self, epoch, batch_idx, N, loss):
-        msg = "===> Epoch[{}]({}/{}): Batch Loss: {:.4f}".format(epoch, batch_idx, N, loss)
+    def print_batch_result(self, epoch, batch_idx, N, loss, elapse):
+        msg = "===> Epoch[{}]({}/{}): Batch Loss: {:.4f} " \
+              "Time-lapse per batch: {:.4f}".format(epoch, batch_idx, N, loss, elapse)
         sys.stdout.write('\r' + msg)
 
-    def validate(self):
-        self.model.eval()
-        loss = self.predict(self.valid_loader, isValidation=True)
-        return loss
-
-    def toCPUNumpy(self, torchTensor):
-        return torchTensor.cpu().data.numpy()
-
-    def toGPU(self, *args):
-        res = ()
-        for i in range(0, len(args)):
-            res = res + (args[i].to(self.device),)
-        return res
+    # def toCPUNumpy(self, torchTensor):
+    #     return torchTensor.cpu().data.numpy()
+    #
+    # def toGPU(self, *args):
+    #     res = ()
+    #     for i in range(0, len(args)):
+    #         res = res + (args[i].to(self.device),)
+    #     return res
 
     def checkIfMinVal(self):
         if self.min_val_loss >= self.current_val_loss:
@@ -47,8 +48,8 @@ class AbsModelContainer(metaclass=ABCMeta):
         else:
             return False
 
-    def getLossHistory(self):
-        return np.array(self.train_loss), np.array(self.val_loss)
+    # def getLossHistory(self):
+    #     return np.array(self.train_loss), np.array(self.val_loss)
 
     def save_weights(self, fName, epoch):
         if np.mod(epoch, 2):
@@ -98,9 +99,11 @@ class AbsModelContainer(metaclass=ABCMeta):
     def forward(self, epochs, dataLoader, forwardCase = 0, N = 0):
 
         for epoch in range (0, epochs):
+            s = time.time()
             self.changeOptim(epoch)
             sumEpochLoss = 0
             for batch_idx, dataInTuple in enumerate(dataLoader):
+                s_batch = time.time()
                 self.forwardProp(dataInTuple)
 
                 if forwardCase == 0: # train
@@ -108,8 +111,9 @@ class AbsModelContainer(metaclass=ABCMeta):
                     self.optimizer.zero_grad()
                     batchLoss.backward()
                     self.optimizer.step()
-                    self.print_batch_result(epoch, batch_idx, len(dataLoader)-1, batchLoss.item())
                     sumEpochLoss += batchLoss.item()
+                    self.print_batch_result(epoch, batch_idx, len(dataLoader) - 1, batchLoss.item(),
+                                            time.time() - s_batch)
                     del batchLoss
                     del self.output
 
@@ -131,7 +135,7 @@ class AbsModelContainer(metaclass=ABCMeta):
                 self.model.eval()
                 valLoss = self.forward(epochs=1, dataLoader = self.validationLoader, forwardCase = 1)
                 self.model.train()
-                self.print_epoch_result(epoch, meanEpochLoss, valLoss)
+                self.print_epoch_result(epoch, meanEpochLoss, valLoss, time.time() - s)
                 self.current_val_loss = valLoss
                 self.train_loss.append(meanEpochLoss)
                 self.val_loss.append(valLoss)
