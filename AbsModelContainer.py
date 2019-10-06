@@ -66,9 +66,6 @@ class AbsModelContainer(metaclass=ABCMeta):
             'val_loss': self.val_loss,
         }, fName + '.pt')
 
-
-
-
     def load_weights(self, path, train = True):
         self.wName = path
         checkPoint = torch.load(path + '.pt')
@@ -112,7 +109,6 @@ class AbsModelContainer(metaclass=ABCMeta):
                     self.optimizer.step()
                     self.print_batch_result(epoch, batch_idx, len(dataLoader)-1, batchLoss.item())
                     sumEpochLoss += batchLoss.item()
-                    self.save_weights(self.wName, epoch)
 
                 elif forwardCase == 1:# validation
                     batchLoss = self.getLoss()
@@ -134,6 +130,7 @@ class AbsModelContainer(metaclass=ABCMeta):
                 self.current_val_loss = valLoss
                 self.train_loss.append(meanEpochLoss)
                 self.val_loss.append(valLoss)
+                self.save_weights(self.wName, epoch)
             if forwardCase == 1:
                 return sumEpochLoss / len(dataLoader)
 
