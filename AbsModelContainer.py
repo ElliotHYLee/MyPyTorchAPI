@@ -113,8 +113,7 @@ class AbsModelContainer(metaclass=ABCMeta):
                     batchLoss.backward()
                     self.optimizer.step()
                     sumEpochLoss += batchLoss.item()
-                    self.print_batch_result(epoch, batch_idx, len(dataLoader) - 1, batchLoss.item(),
-                                            time.time() - s_batch)
+                    self.print_batch_result(epoch, batch_idx, len(dataLoader) - 1, batchLoss.item(), time.time() - s_batch)
                     del batchLoss
                     del self.output
 
